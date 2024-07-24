@@ -1,43 +1,6 @@
 // Memanggil modul express untuk membuat aplikasi web
 const express = require("express");
 
-// Menggunakan middleware untuk menangani request GET, POST, PUT, dan DELETE
-// Tambahkan komentar untuk menjelaskan apa yang dilakukan oleh middleware ini
-// app.use('/', (req, res)=>{
-// res.send('Hello World')
-// })
-
-// Menambahkan middleware untuk menangani request GET
-// app.get("/", (req, res) => {
-//     res.send("Hai aku method GET");
-// });
-
-// // Menambahkan middleware untuk menangani request POST
-// app.post("/", (req, res) => {
-//     res.send("Hai aku method POST");
-// });
-
-// // Menambahkan middleware untuk menangani request PUT
-// app.put("/", (req, res) => {
-//     res.send("Hai aku method PUT");
-// });
-
-// // Menambahkan middleware untuk menangani request DELETE
-// app.delete("/", (req, res) => {
-//     res.send("Hai aku method DELETE");
-// });
-
-// Menerapkan listener pada port 3000 dan menampilkan pesan bahwa server sudah berjalan
-// app.listen(3000, () => {
-//     console.log("Server running on port: 3000");
-// });
-
-// Memanggil modul fs untuk bekerja dengan file system
-const fs = require("fs");
-
-// Memanggil modul path untuk bekerja dengan jalan file
-const path = require("path");
-
 // Memanggil modul dotenv untuk mengambil nilai dari file .env
 const dotenv = require("dotenv");
 
@@ -49,6 +12,7 @@ const cookieParser = require("cookie-parser");
 
 // Memanggil modul routes untuk mengatur perutean request
 const userRoutes = require("./apps/routes/user.route");
+const authRoutes = require("./apps/routes/auth.route"); // Menambahkan rute auth
 
 // Mengaktifkan penggunaan nilai dari file .env
 dotenv.config();
@@ -77,13 +41,16 @@ app.use(express.urlencoded({ extended: false }));
 // Mengaktifkan middleware static untuk mengaktifkan penyediaan file statis
 app.use(express.static("public"));
 
+// Menambahkan rute untuk autentikasi
+app.use("/api/auth", authRoutes); // Menggunakan authRoutes untuk autentikasi
+
 // Menambahkan middleware untuk menangani request GET pada path root
 app.get("/", (req, res) => {
     res.send("Selamat datang di API saya");
 });
 
-// Menambahkan middleware untuk menangani request pada path /users
-app.use("/users", userRoutes);
+// Menambahkan middleware untuk menangani request pada path /users dengan proteksi JWT
+app.use("/api/users", userRoutes); // Hapus middleware autentikasi dulu
 
 // Mengaktifkan listener pada port dan menampilkan informasi tentang port dan environment yang digunakan
 module.exports = app.listen(port, () => {
