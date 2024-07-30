@@ -1,9 +1,9 @@
 // services/auth.service.js
 import bcrypt from "bcryptjs";
-import jwt from "../utilities/jwt.js";
+import { generateToken } from "../utilities/jwt.js";
 import db from "../../db/models/index.js"; // Sesuaikan dengan struktur Anda
 
-const Users = db.users;
+const Users = db.User;
 
 // Register a new user
 export const registerUser = async (name, username, email, password) => {
@@ -55,7 +55,7 @@ export const loginUser = async (email, password) => {
             email: user.email,
         };
         // Generate JWT
-        const token = jwt.generateToken(payload);
+        const token = generateToken(payload);
 
         return { message: "Login successful", token };
     } catch (error) {

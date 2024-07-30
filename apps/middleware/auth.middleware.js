@@ -1,6 +1,8 @@
-const jwt = require("../utilities/jwt");
+// Import modul jwt dari file ../utilities/jwt.js
+import { verifyToken } from "../utilities/jwt.js";
 
-const authenticateJWT = (req, res, next) => {
+// Middleware untuk autentikasi JWT
+export const authenticateJWT = (req, res, next) => {
     const token =
         req.headers.authorization && req.headers.authorization.split(" ")[1];
 
@@ -9,7 +11,7 @@ const authenticateJWT = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verifyToken(token);
+        const decoded = verifyToken(token);
 
         if (!decoded) {
             return res.status(403).json({ message: "Invalid token" });
@@ -24,5 +26,3 @@ const authenticateJWT = (req, res, next) => {
         });
     }
 };
-
-module.exports = authenticateJWT;

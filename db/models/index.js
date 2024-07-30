@@ -1,29 +1,31 @@
 "use strict";
 
-// Mengimpor modul-modul yang diperlukan untuk membuat koneksi ke database
+// Import necessary modules for database connection
 import fs from "fs";
 import path from "path";
 import { Sequelize } from "sequelize";
-import process from "process";
+import { fileURLToPath, pathToFileURL } from "url"; // Import pathToFileURL
 
-// Mendapatkan informasi tentang file ini
-const basename = path.basename(new URL(import.meta.url).pathname);
+// Get the current file name and directory name
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Get environment settings
+const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || "development";
 
-// Mengimpor konfigurasi untuk koneksi ke database
+// Import database configuration
 import configFile from "../config/config.js";
 const config = configFile[env];
 const db = {};
 
-// Mendeklarasikan variabel sequelize
+// Declare sequelize variable
 let sequelize;
 
-// Jika ada variabel lingkungan yang digunakan untuk koneksi ke database
+// Create a sequelize instance using environment variables or config
 if (config.use_env_variable) {
-    // Membuat koneksi ke database menggunakan nilai dari variabel lingkungan
     sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
-    // Membuat koneksi ke database menggunakan nilai yang didefinisikan di file konfigurasi
     sequelize = new Sequelize(
         config.database,
         config.username,
@@ -32,34 +34,44 @@ if (config.use_env_variable) {
     );
 }
 
-// Membaca semua file di direktori models yang memiliki ekstensi .js
-fs.readdirSync(new URL(".", import.meta.url).pathname)
-    .filter((file) => {
-        return (
-            file.indexOf(".") !== 0 &&
-            file !== basename &&
-            file.slice(-3) === ".js" &&
-            file.indexOf(".test.js") === -1
-        );
-    })
-    // Membuat instance dari setiap model dan menyimpannya di dalam objek db
-    .forEach(async (file) => {
-        const { default: modelImport } = await import(
-            path.join(__dirname, file)
-        );
-        const model = modelImport(sequelize, Sequelize.DataTypes);
-        db[model.name] = model;
-    });
+// Read all model files in the current directory and import them
+const modelFiles = fs.readdirSync(__dirname).filter((file) => {
+    return (
+        file.indexOf(".") !== 0 && // Exclude hidden files
+        file !== basename && // Exclude the current file
+        file.slice(-3) === ".js" && // Include only .js files
+        file.indexOf(".test.js") === -1 // Exclude test files
+    );
+});
 
-// Melakukan asosiasi antara model dengan satu model lainnya
+// Import each model using pathToFileURL
+for (const file of modelFiles) {
+    const modelPath = path.join(__dirname, file);
+    const modelUrl = pathToFileURL(modelPath).href;
+
+    try {
+        const modelImport = await import(modelUrl);
+        const model = modelImport.default(sequelize, Sequelize.DataTypes);
+        db[model.name] = model;
+        console.log(`Loaded model: ${model.name}`);
+    } catch (error) {
+        console.error(`Failed to import model ${file}:`, error.message);
+    }
+}
+
+// Set associations between models
 Object.keys(db).forEach((modelName) => {
     if (db[modelName].associate) {
         db[modelName].associate(db);
     }
 });
 
-// Menyimpan referensi ke objek Sequelize pada objek db
+// Store a reference to the sequelize instance
 db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 
-// Mengekspor objek db agar dapat digunakan di bagian lain dari aplikasi
+// Debugging: Print loaded models
+console.log("Loaded models:", Object.keys(db));
+
+// Export the db object for use in other parts of the application
 export default db;

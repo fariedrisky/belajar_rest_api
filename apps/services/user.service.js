@@ -2,7 +2,17 @@
 import db from "../../db/models/index.js";
 
 // Definisikan objek Users yang merujuk pada model Users yang telah diimport
-const Users = db.users;
+const Users = db.User;
+
+// Check loaded models
+console.log("Loaded models:", Object.keys(db));
+
+// Check specific model
+if (Users) {
+    console.log("User model is loaded correctly.");
+} else {
+    console.error("User model failed to load.");
+}
 
 // Fungsi untuk mendapatkan semua data user
 export const getUsers = async () => {

@@ -1,8 +1,9 @@
-// Mengimpor DataTypes dari sequelize
+// models/UserModel.js
+
 import { DataTypes } from "sequelize";
 
 const UserModel = (sequelize) => {
-    // Mendefinisikan atribut model pengguna
+    // Define model attributes
     const attributes = {
         id: {
             type: DataTypes.INTEGER(10),
@@ -44,15 +45,16 @@ const UserModel = (sequelize) => {
         },
     };
 
-    // Mendefinisikan opsi model
+    // Define model options
     const options = {
         tableName: "users",
         timestamps: false,
     };
 
-    // Mengembalikan definisi model pengguna
-    return sequelize.define("users", attributes, options);
+    // Define the model
+    const User = sequelize.define("User", attributes, options);
+
+    return User;
 };
 
-// Mengekspor model pengguna sebagai modul default
 export default UserModel;

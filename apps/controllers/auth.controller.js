@@ -1,7 +1,8 @@
-const authService = require("../services/auth.service");
+// Import auth service
+import * as authService from "../services/auth.service.js";
 
 // Fungsi untuk registrasi pengguna baru
-const register = async (req, res) => {
+export const register = async (req, res) => {
     const { name, username, email, password } = req.body;
 
     try {
@@ -20,7 +21,7 @@ const register = async (req, res) => {
 };
 
 // Fungsi untuk login
-const login = async (req, res) => {
+export const login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -34,5 +35,3 @@ const login = async (req, res) => {
         });
     }
 };
-
-module.exports = { register, login };

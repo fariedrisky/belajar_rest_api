@@ -1,8 +1,8 @@
 // Import user service
-const userService = require("../services/user.service");
+import * as userService from "../services/user.service.js";
 
 // Controller untuk mendapatkan semua data user
-exports.getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
     try {
         const response = await userService.getUsers();
         res.status(response.status).json(response);
@@ -16,7 +16,7 @@ exports.getUsers = async (req, res) => {
 };
 
 // Controller untuk mendapatkan data user berdasarkan id
-exports.getUser = async (req, res) => {
+export const getUser = async (req, res) => {
     try {
         const { id } = req.params; // Mengambil id dari URL parameter
         const response = await userService.getUser(id);
@@ -31,7 +31,7 @@ exports.getUser = async (req, res) => {
 };
 
 // Controller untuk membuat data user baru
-exports.createUser = async (req, res) => {
+export const createUser = async (req, res) => {
     try {
         // Mengambil properti dari req.body menggunakan destructuring
         const { name, username, email, password } = req.body;
@@ -56,7 +56,7 @@ exports.createUser = async (req, res) => {
 };
 
 // Controller untuk mengupdate data user
-exports.updateUser = async (req, res) => {
+export const updateUser = async (req, res) => {
     try {
         const { id } = req.params; // Mengambil id dari URL parameter
         const { name, username, email, password } = req.body; // Mengambil properti dari req.body
@@ -82,9 +82,7 @@ exports.updateUser = async (req, res) => {
 };
 
 // Controller untuk menghapus data user
-
-// Controller function to handle user deletion
-exports.deleteUser = async (req, res) => {
+export const deleteUser = async (req, res) => {
     try {
         const id = Number(req.params.id); // Mengambil id dari URL parameter
         console.log("exports.deleteUser ~ id:", id, typeof id);
