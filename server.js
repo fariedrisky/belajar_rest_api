@@ -1,18 +1,13 @@
-// Memanggil modul express untuk membuat aplikasi web
-const express = require("express");
+// Import modul yang diperlukan menggunakan sintaks ES Modules
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-// Memanggil modul dotenv untuk mengambil nilai dari file .env
-const dotenv = require("dotenv");
-
-// Memanggil modul cors untuk mengatur header CORS
-const cors = require("cors");
-
-// Memanggil modul cookie-parser untuk mengatur penanganan cookie
-const cookieParser = require("cookie-parser");
-
-// Memanggil modul routes untuk mengatur perutean request
-const userRoutes = require("./apps/routes/user.route");
-const authRoutes = require("./apps/routes/auth.route"); // Menambahkan rute auth
+// Import rute dan utilitas
+import userRoutes from "./apps/routes/user.route.js";
+import authRoutes from "./apps/routes/auth.route.js"; // Menambahkan rute auth
+import { verifyToken } from "./apps/utilities/jwt.js";
 
 // Mengaktifkan penggunaan nilai dari file .env
 dotenv.config();
@@ -50,10 +45,10 @@ app.get("/", (req, res) => {
 });
 
 // Menambahkan middleware untuk menangani request pada path /users dengan proteksi JWT
-app.use("/api/users", userRoutes); // Hapus middleware autentikasi dulu
+app.use("/api/users", verifyToken, userRoutes); // Hapus middleware autentikasi dulu
 
 // Mengaktifkan listener pada port dan menampilkan informasi tentang port dan environment yang digunakan
-module.exports = app.listen(port, () => {
+app.listen(port, () => {
     process.stdout.write(`Port Aktif : ${port} \n`);
     process.stdout.write(`Environment : ${NODE_ENV} \n`);
 });

@@ -18,7 +18,7 @@ router.get("/", userController.getUsers);
 
 // Menambahkan route GET untuk mendapatkan data user berdasarkan id
 // Menggunakan fungsi getUser dari user.controller.js
-router.get("/:user_id", userController.getUser);
+router.get("/:id", userController.getUser);
 
 /* Menambahkan route POST untuk membuat data user baru
    Parameter pertama adalah validasi data menggunakan userValidation.createUser
@@ -29,12 +29,12 @@ router.post("/create", userValidation.createUser, userController.createUser);
 /* Menambahkan route PUT untuk mengupdate data user berdasarkan id
    Parameter pertama adalah fungsi yang akan dieksekusi jika data valid
    Menggunakan fungsi updateUser dari user.controller.js */
-router.put("/update/:user_id", userController.updateUser);
+router.put("/update/:id", userController.updateUser);
 
 /* Menambahkan route DELETE untuk menghapus data user berdasarkan id
    Parameter pertama adalah fungsi yang akan dieksekusi jika data valid
    Menggunakan fungsi deleteUser dari user.controller.js */
-router.delete("/delete/:user_id", userController.deleteUser);
+router.delete("/delete/:id", userController.deleteUser);
 
 // Mengexport router agar dapat diakses di file lain
 module.exports = router;

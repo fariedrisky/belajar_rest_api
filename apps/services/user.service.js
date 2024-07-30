@@ -1,17 +1,13 @@
 // Import model Users dari file models/index.js yang berada di level atas
-const db = require("../../db/models/index");
+import db from "../../db/models/index.js";
 
 // Definisikan objek Users yang merujuk pada model Users yang telah diimport
 const Users = db.users;
 
 // Fungsi untuk mendapatkan semua data user
-// Fungsi ini mengembalikan Promise yang berisi objek response
-// Jika berhasil, response berisi status 200, pesan, dan data user
-// Jika gagal, response berisi status 500, pesan, dan error message
-exports.getUsers = async () => {
+export const getUsers = async () => {
     try {
         // Menggunakan fungsi findAll() dari model Users untuk mendapatkan semua data user
-        // Fungsi ini mengembalikan Promise yang berisi array dari objek user
         const users = await Users.findAll();
 
         // Membuat objek response dengan status 200, pesan, dan data user
@@ -31,16 +27,20 @@ exports.getUsers = async () => {
 };
 
 // Fungsi untuk mendapatkan data user berdasarkan id
-// Fungsi ini mengembalikan Promise yang berisi objek response
-// Jika berhasil, response berisi status 200, pesan, dan data user yang ditemukan
-// Jika gagal, response berisi status 500, pesan, dan error message
-exports.getUser = async (user_id) => {
+export const getUser = async (id) => {
     try {
         // Menggunakan fungsi findOne() dari model Users untuk mendapatkan data user berdasarkan id
-        // Fungsi ini mengembalikan Promise yang berisi objek user
         const user = await Users.findOne({
-            where: { id: user_id },
+            where: { id: id },
         });
+
+        // Jika user tidak ditemukan, kirimkan status 404
+        if (!user) {
+            return {
+                status: 404,
+                message: "User tidak ditemukan",
+            };
+        }
 
         // Membuat objek response dengan status 200, pesan, dan data user yang ditemukan
         return {
@@ -59,24 +59,26 @@ exports.getUser = async (user_id) => {
 };
 
 // Fungsi untuk membuat data user baru
-// Fungsi ini mengembalikan Promise yang berisi objek response
-// Jika berhasil, response berisi status 200, pesan, dan data user yang baru ditambahkan
-// Jika gagal, response berisi status 500, pesan, dan error message
-exports.createUser = async (req) => {
+export const createUser = async (name, username, email, password) => {
     try {
-        // Mengambil nilai dari properti name dan email dari objek body yang dikirimkan melalui request
-        const { name, email } = req.body;
+        // Cek apakah email sudah digunakan
+        const cekUser = await Users.findOne({ where: { email: email } });
+
+        if (cekUser) throw new Error("Email sudah digunakan");
+
         // Menggunakan fungsi create() dari model Users untuk membuat data user baru
-        // Fungsi ini mengembalikan Promise yang berisi objek user
-        await Users.create({
-            name: name,
-            email: email,
+        const user = await Users.create({
+            name,
+            username,
+            email,
+            password, // Pastikan password sudah di-hash sebelum disimpan
         });
 
-        // Membuat objek response dengan status 200, pesan, dan data user yang baru ditambahkan
+        // Membuat objek response dengan status 201, pesan, dan data user yang baru ditambahkan
         return {
-            status: 200,
+            status: 201,
             message: "Berhasil menyimpan data user",
+            data: user,
         };
     } catch (error) {
         // Jika terjadi error, membuat objek response dengan status 500, pesan, dan error message
@@ -89,19 +91,45 @@ exports.createUser = async (req) => {
 };
 
 // Fungsi untuk mengupdate data user
-// Fungsi ini mengembalikan Promise yang berisi objek response
-// Jika berhasil, response berisi status 200, pesan, dan data user yang diperbarui
-// Jika gagal, response berisi status 500, pesan, dan error message
-exports.updateUser = async (req, user_id) => {
+export const updateUser = async (
+    id,
+    name,
+    username,
+    email,
+    password,
+    userIdFromToken
+) => {
     try {
-        // Mengambil nilai dari properti name, email, dan address dari objek body yang dikirimkan melalui request
-        const { name, email, address } = req.body;
+        // Check if the ID in the request matches the ID from the token
+        if (id !== userIdFromToken) {
+            return {
+                status: 403,
+                message: "Tidak diizinkan mengedit data user lain",
+            };
+        }
+
+        // Cek apakah user dengan id tersebut ada
+        const user = await Users.findOne({
+            where: { id: id },
+        });
+
+        if (!user) {
+            return {
+                status: 404,
+                message: "User tidak ditemukan",
+            };
+        }
+
         // Menggunakan fungsi update() dari model Users untuk mengupdate data user berdasarkan id
-        // Fungsi ini mengembalikan Promise yang berisi objek user
         await Users.update(
-            { name, email, address },
             {
-                where: { id: user_id },
+                name,
+                username,
+                email,
+                password, // Hash password jika diubah
+            },
+            {
+                where: { id: id },
             }
         );
 
@@ -121,15 +149,31 @@ exports.updateUser = async (req, user_id) => {
 };
 
 // Fungsi untuk menghapus data user
-// Fungsi ini mengembalikan Promise yang berisi objek response
-// Jika berhasil, response berisi status 200, pesan, dan data user yang dihapus
-// Jika gagal, response berisi status 500, pesan, dan error message
-exports.deleteUser = async (req, user_id) => {
+export const deleteUser = async (id, userIdFromToken) => {
     try {
+        // Check if the ID in the request matches the ID from the token
+        if (id !== userIdFromToken) {
+            return {
+                status: 403,
+                message: "Tidak diizinkan menghapus data user lain",
+            };
+        }
+
+        // Cek apakah user dengan id tersebut ada
+        const user = await Users.findOne({
+            where: { id: id },
+        });
+
+        if (!user) {
+            return {
+                status: 404,
+                message: "User tidak ditemukan",
+            };
+        }
+
         // Menggunakan fungsi destroy() dari model Users untuk menghapus data user berdasarkan id
-        // Fungsi ini mengembalikan Promise yang berisi objek user
         await Users.destroy({
-            where: { id: user_id },
+            where: { id: id },
         });
 
         // Membuat objek response dengan status 200, pesan, dan data user yang dihapus

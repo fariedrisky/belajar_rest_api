@@ -1,14 +1,14 @@
 // services/auth.service.js
-const bcrypt = require("bcrypt");
-const jwt = require("../utilities/jwt");
-const db = require("../../db/models/index"); // Sesuaikan dengan struktur Anda
+import bcrypt from "bcryptjs";
+import jwt from "../utilities/jwt.js";
+import db from "../../db/models/index.js"; // Sesuaikan dengan struktur Anda
 
 const Users = db.users;
 
 // Register a new user
-const registerUser = async (name, username, email, password) => {
+export const registerUser = async (name, username, email, password) => {
     try {
-        // Hash password with bcrypt
+        // Hash password with bcryptjs
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Save new user
@@ -24,12 +24,16 @@ const registerUser = async (name, username, email, password) => {
             userId: newUser.id,
         };
     } catch (error) {
-        throw new Error("Registration failed: " + error.message);
+        throw {
+            status: 500,
+            message: "Registration failed",
+            error: error.message,
+        };
     }
 };
 
 // Login a user
-const loginUser = async (email, password) => {
+export const loginUser = async (email, password) => {
     try {
         // Find user by email
         const user = await Users.findOne({ where: { email } });
@@ -45,13 +49,20 @@ const loginUser = async (email, password) => {
             throw new Error("Invalid credentials");
         }
 
+        const payload = {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+        };
         // Generate JWT
-        const token = jwt.generateToken({ userId: user.id });
+        const token = jwt.generateToken(payload);
 
         return { message: "Login successful", token };
     } catch (error) {
-        throw new Error("Login failed: " + error.message);
+        throw {
+            status: 500,
+            message: "Login failed",
+            error: error.message,
+        };
     }
 };
-
-module.exports = { registerUser, loginUser };

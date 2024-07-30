@@ -1,19 +1,21 @@
 "use strict";
 
-// Memanggil modul-modul yang diperlukan untuk membuat koneksi ke database
-const fs = require("fs");
-const path = require("path");
-const Sequelize = require("sequelize");
-const process = require("process");
+// Mengimpor modul-modul yang diperlukan untuk membuat koneksi ke database
+import fs from "fs";
+import path from "path";
+import { Sequelize } from "sequelize";
+import process from "process";
 
 // Mendapatkan informasi tentang file ini
-const basename = path.basename(__filename);
+const basename = path.basename(new URL(import.meta.url).pathname);
 const env = process.env.NODE_ENV || "development";
 
-// Mendapatkan konfigurasi untuk koneksi ke database
-const config = require(__dirname + "/../config/config.js")[env];
+// Mengimpor konfigurasi untuk koneksi ke database
+import configFile from "../config/config.js";
+const config = configFile[env];
 const db = {};
 
+// Mendeklarasikan variabel sequelize
 let sequelize;
 
 // Jika ada variabel lingkungan yang digunakan untuk koneksi ke database
@@ -31,7 +33,7 @@ if (config.use_env_variable) {
 }
 
 // Membaca semua file di direktori models yang memiliki ekstensi .js
-fs.readdirSync(__dirname)
+fs.readdirSync(new URL(".", import.meta.url).pathname)
     .filter((file) => {
         return (
             file.indexOf(".") !== 0 &&
@@ -41,11 +43,11 @@ fs.readdirSync(__dirname)
         );
     })
     // Membuat instance dari setiap model dan menyimpannya di dalam objek db
-    .forEach((file) => {
-        const model = require(path.join(__dirname, file))(
-            sequelize,
-            Sequelize.DataTypes
+    .forEach(async (file) => {
+        const { default: modelImport } = await import(
+            path.join(__dirname, file)
         );
+        const model = modelImport(sequelize, Sequelize.DataTypes);
         db[model.name] = model;
     });
 
@@ -59,5 +61,5 @@ Object.keys(db).forEach((modelName) => {
 // Menyimpan referensi ke objek Sequelize pada objek db
 db.sequelize = sequelize;
 
-// Menyimpan objek db dan mengexportnya agar dapat digunakan di bagian lain dari aplikasi
-module.exports = db;
+// Mengekspor objek db agar dapat digunakan di bagian lain dari aplikasi
+export default db;

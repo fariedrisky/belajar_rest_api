@@ -1,9 +1,9 @@
 // Mengimpor fungsi validationResult dari express-validator untuk memvalidasi data request
-const { validationResult } = require("express-validator");
+import { validationResult } from "express-validator";
 
 // Membuat fungsi validate yang akan dipanggil di file route untuk memvalidasi data request
 // Parameter validations adalah array yang berisi validasi-validasi yang akan dieksekusi
-module.exports.validate = (validations) => async (req, res, next) => {
+export const validate = (validations) => async (req, res, next) => {
     // Memanggil fungsi map pada array validations dan memanggil fungsi run pada setiap validasi
     // dengan parameter req, untuk memvalidasi data request
     await Promise.all(validations.map((validation) => validation.run(req)));
