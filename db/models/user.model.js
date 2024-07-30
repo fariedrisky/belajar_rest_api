@@ -1,22 +1,19 @@
-// models/UserModel.js
-
 import { DataTypes } from "sequelize";
 
 const UserModel = (sequelize) => {
-    // Define model attributes
     const attributes = {
         id: {
-            type: DataTypes.INTEGER(10),
+            type: DataTypes.INTEGER,
             allowNull: false,
             primaryKey: true,
             autoIncrement: true,
         },
         name: {
-            type: DataTypes.STRING(),
+            type: DataTypes.STRING,
             allowNull: false,
         },
         username: {
-            type: DataTypes.STRING(),
+            type: DataTypes.STRING,
             allowNull: false,
             unique: true,
             validate: {
@@ -30,29 +27,47 @@ const UserModel = (sequelize) => {
             unique: true,
         },
         password: {
-            type: DataTypes.STRING(),
+            type: DataTypes.STRING,
             allowNull: false,
         },
+        role: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 3,
+            validate: {
+                isIn: [[1, 2, 3]], // 1 = kajur, 2 = dosen, 3 = mahasiswa
+            },
+        },
         created_at: {
-            type: DataTypes.DATE(),
+            type: DataTypes.DATE,
             allowNull: false,
             defaultValue: DataTypes.NOW,
         },
         updated_at: {
-            type: DataTypes.DATE(),
+            type: DataTypes.DATE,
             allowNull: false,
             defaultValue: DataTypes.NOW,
         },
     };
 
-    // Define model options
     const options = {
         tableName: "users",
         timestamps: false,
     };
 
-    // Define the model
     const User = sequelize.define("User", attributes, options);
+
+    User.associate = (models) => {
+        User.hasMany(models.MataKuliah, {
+            foreignKey: "dosen_id",
+            as: "MataKuliahDosen",
+        });
+        User.belongsToMany(models.MataKuliah, {
+            through: "Enrollments", // Tabel penghbung
+            foreignKey: "mahasiswa_id",
+            as: "MataKuliahMahasiswa", // Alias untuk mata kuliah yang diambil oleh mahasiswa
+        });
+    };
 
     return User;
 };

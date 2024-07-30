@@ -1,13 +1,17 @@
-// services/auth.service.js
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utilities/jwt.js";
-import db from "../../db/models/index.js"; // Sesuaikan dengan struktur Anda
+import db from "../../db/models/index.js";
 
 const Users = db.User;
 
 // Register a new user
-export const registerUser = async (name, username, email, password) => {
+export const registerUser = async (name, username, email, password, role) => {
     try {
+        // Validate role input (should be 1, 2, or 3 as integers)
+        if (![1, 2, 3].includes(role)) {
+            throw new Error("Invalid role");
+        }
+
         // Hash password with bcryptjs
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -17,6 +21,7 @@ export const registerUser = async (name, username, email, password) => {
             username,
             email,
             password: hashedPassword,
+            role: role, // Store role as an integer
         });
 
         return {
@@ -51,13 +56,21 @@ export const loginUser = async (email, password) => {
 
         const payload = {
             id: user.id,
+            name: user.name,
             username: user.username,
             email: user.email,
+            role: user.role, // Include role in the payload if needed
         };
+        console.log("loginUser ~ payload.name:", payload.name);
         // Generate JWT
         const token = generateToken(payload);
 
-        return { message: "Login successful", token };
+        return {
+            message: "Login successful",
+            token,
+            name: user.name,
+            role: user.role,
+        };
     } catch (error) {
         throw {
             status: 500,

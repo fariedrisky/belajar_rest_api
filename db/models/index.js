@@ -1,54 +1,26 @@
-"use strict";
-
-// Import necessary modules for database connection
 import fs from "fs";
 import path from "path";
+import { fileURLToPath, pathToFileURL } from "url";
+import sequelize from "../connection.js";
 import { Sequelize } from "sequelize";
-import { fileURLToPath, pathToFileURL } from "url"; // Import pathToFileURL
 
-// Get the current file name and directory name
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Get environment settings
-const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || "development";
-
-// Import database configuration
-import configFile from "../config/config.js";
-const config = configFile[env];
 const db = {};
 
-// Declare sequelize variable
-let sequelize;
-
-// Create a sequelize instance using environment variables or config
-if (config.use_env_variable) {
-    sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-    sequelize = new Sequelize(
-        config.database,
-        config.username,
-        config.password,
-        config
-    );
-}
-
-// Read all model files in the current directory and import them
+// Read and import all model files from the 'models' directory
 const modelFiles = fs.readdirSync(__dirname).filter((file) => {
     return (
-        file.indexOf(".") !== 0 && // Exclude hidden files
-        file !== basename && // Exclude the current file
-        file.slice(-3) === ".js" && // Include only .js files
-        file.indexOf(".test.js") === -1 // Exclude test files
+        file.indexOf(".") !== 0 &&
+        file !== "index.js" &&
+        file.slice(-3) === ".js"
     );
 });
 
-// Import each model using pathToFileURL
 for (const file of modelFiles) {
     const modelPath = path.join(__dirname, file);
     const modelUrl = pathToFileURL(modelPath).href;
-
     try {
         const modelImport = await import(modelUrl);
         const model = modelImport.default(sequelize, Sequelize.DataTypes);
@@ -66,12 +38,4 @@ Object.keys(db).forEach((modelName) => {
     }
 });
 
-// Store a reference to the sequelize instance
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
-
-// Debugging: Print loaded models
-console.log("Loaded models:", Object.keys(db));
-
-// Export the db object for use in other parts of the application
 export default db;

@@ -1,6 +1,4 @@
 import * as dotenv from "dotenv";
-
-// Mengaktifkan penggunaan nilai dari file .env
 dotenv.config();
 
 export default {
@@ -13,7 +11,7 @@ export default {
         dialectOptions: {
             decimalNumbers: true,
         },
-        port: process.env.DB_PORT ? process.env.DB_PORT : 3306,
+        port: process.env.DB_PORT || 3306,
         timezone: "+07:00",
         logging: false,
     },
@@ -26,7 +24,7 @@ export default {
         dialectOptions: {
             decimalNumbers: true,
         },
-        port: process.env.DB_PORT ? process.env.DB_PORT : 3306,
+        port: process.env.DB_PORT || 3306,
         timezone: "+07:00",
         logging: false,
     },
@@ -39,7 +37,7 @@ export default {
         dialectOptions: {
             decimalNumbers: true,
         },
-        port: process.env.DB_PORT ? process.env.DB_PORT : 3306,
+        port: process.env.DB_PORT || 3306,
         timezone: "+07:00",
         logging: false,
     },

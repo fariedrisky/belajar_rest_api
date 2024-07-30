@@ -3,14 +3,15 @@ import * as authService from "../services/auth.service.js";
 
 // Fungsi untuk registrasi pengguna baru
 export const register = async (req, res) => {
-    const { name, username, email, password } = req.body;
+    const { name, username, email, password, role } = req.body; // Include role
 
     try {
         const result = await authService.registerUser(
-            name, // Menyertakan name
+            name,
             username,
             email,
-            password
+            password,
+            role // Pass role to the service
         );
         res.status(201).json(result);
     } catch (error) {
